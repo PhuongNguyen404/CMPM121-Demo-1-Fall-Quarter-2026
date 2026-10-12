@@ -28,9 +28,12 @@ image.addEventListener("mouseup", () => {
   image.src = tileUrl;
 });
 
+const message = document.createElement("p");
+message.textContent = "Your project starts here.";
+
 let count = 0; //currency count
-const clickValue = 1; //the amount of currency gained per click
-const total = 1; //total production rate, starts at 1 click per second
+let clickValue = 1; //the amount of currency gained per click
+let total = 1; //total production rate, starts at 1 click per second
 
 const counter = document.createElement("p"); //create a new paragraph element to display the currency count
 counter.textContent = `Clicks: ${count}`; //display the initial count in the counter element
@@ -47,6 +50,12 @@ image.addEventListener("click", () => { //Behavior when button is clicked
   counter.textContent = `Clicks: ${count}`; //display the count in the counter element
 });
 
+function updateDisplays() { // is called whenever an upgrade is purchased
+  counter.textContent = `Clicks: ${Math.floor(count)}`;
+  productionDisplay.textContent = `Total Production: ${total} / second`;
+  clickValueDisplay.textContent = `Click Value: ${clickValue} / click`;
+}
+
 let previousTime: number | undefined; //will store the previous frame's timestamp, starts undefined
 
 function update(timestamp: number) {
@@ -61,6 +70,113 @@ function update(timestamp: number) {
   requestAnimationFrame(update);
 }
 
-app.append(heading, image, counter, productionDisplay, clickValueDisplay);
+const upgradesContainer = document.createElement("div"); //create container to display upgrade buttons
+upgradesContainer.style.display = "flex";
+upgradesContainer.style.gap = "15px";
+
+// Upgrade 1
+let cost1 = 10; //initial cost of upgrade
+let owned1 = 0; //number of upgrades owned
+const upgrade1 = document.createElement("button"); //create a button for the upgrade
+
+function buyUpgrade1() { //update the text display of this upgrade button when purchased
+  upgrade1.textContent = `Upgrade 1 | Cost: ${cost1} | Owned: ${owned1}`;
+}
+
+upgrade1.addEventListener("click", () => { //upgrade increases freq by 1/s
+  if (count >= cost1) {
+    count -= cost1;
+    total += 1;
+    owned1++;
+    cost1 *= 2;
+
+    updateDisplays(); //update all displays when an upgrade is purchased
+    buyUpgrade1();
+  }
+});
+
+buyUpgrade1();
+upgradesContainer.append(upgrade1);
+
+// Upgrade 2
+let cost2 = 25;
+let owned2 = 0;
+const upgrade2 = document.createElement("button");
+
+function buyUpgrade2() {
+  upgrade2.textContent = `Upgrade 2 | Cost: ${cost2} | Owned: ${owned2}`;
+}
+
+upgrade2.addEventListener("click", () => {
+  if (count >= cost2) {
+    count -= cost2;
+    total += 5;
+    owned2++;
+    cost2 *= 2;
+
+    updateDisplays();
+    buyUpgrade2();
+  }
+});
+
+buyUpgrade2();
+upgradesContainer.append(upgrade2);
+
+// Upgrade 3
+let cost3 = 100;
+let owned3 = 0;
+const upgrade3 = document.createElement("button");
+
+function buyUpgrade3() {
+  upgrade3.textContent = `Upgrade 3 | Cost: ${cost3} | Owned: ${owned3}`;
+}
+
+upgrade3.addEventListener("click", () => {
+  if (count >= cost3) {
+    count -= cost3;
+    total += 20;
+    owned3++;
+    cost3 *= 2;
+
+    updateDisplays();
+    buyUpgrade3();
+  }
+});
+
+buyUpgrade3();
+upgradesContainer.append(upgrade3);
+
+// Upgrade 4 (Increases click value)
+let cost4 = 500;
+let owned4 = 0;
+const upgrade4 = document.createElement("button");
+
+function buyUpgrade4() {
+  upgrade4.textContent = `Upgrade 4 | Cost: ${cost4} | Owned: ${owned4}`;
+}
+upgrade4.addEventListener("click", () => {
+  if (count >= cost4) {
+    count -= cost4;
+    clickValue += 1; //increase click value by 1
+    owned4++;
+    cost4 *= 2;
+
+    updateDisplays();
+    buyUpgrade4();
+  }
+});
+
+buyUpgrade4();
+upgradesContainer.append(upgrade4);
+
+app.append(
+  heading,
+  image,
+  message,
+  counter,
+  productionDisplay,
+  clickValueDisplay,
+  upgradesContainer,
+);
 
 requestAnimationFrame(update);
