@@ -74,8 +74,93 @@ const upgradesContainer = document.createElement("div"); //create container to d
 upgradesContainer.style.display = "flex";
 upgradesContainer.style.gap = "15px";
 
+class Upgrade {
+  name: string;
+  cost: number;
+  button: HTMLButtonElement;
+
+  constructor(name: string, cost: number) {
+    this.name = name;
+    this.cost = cost;
+
+    this.button = document.createElement("button");
+    this.button.style.whiteSpace = "pre-line";
+    upgradesContainer.append(this.button);
+
+    this.button.addEventListener("click", () => {
+      if (count >= this.cost) {
+        this.buyUpgrade();
+        updateDisplays();
+      }
+    });
+  }
+
+  buyUpgrade() {
+    throw new Error(
+      `buyUpgrade() needs to be defined in subclass: ${this.name}`,
+    );
+  }
+}
+
+class HelperUpgrade extends Upgrade {
+  rateAdd: number;
+  numOwned: number;
+
+  constructor(name: string, cost: number, rateAdd: number) {
+    super(name, cost);
+    this.rateAdd = rateAdd;
+    this.numOwned = 0;
+    this.updateButtonText();
+  }
+
+  override buyUpgrade(): void {
+    count -= this.cost;
+    total += this.rateAdd;
+    this.numOwned++;
+    this.cost *= 2;
+    this.updateButtonText();
+  }
+
+  updateButtonText() {
+    this.button.textContent = `${this.name}
+      Cost: ${this.cost}
+      Owned: ${this.numOwned}
+      Each ${this.name} adds ${this.rateAdd} fish per second`;
+  }
+}
+
+class UpgradeForUpgrade extends Upgrade {
+  mult: number;
+  upgrade: HelperUpgrade;
+
+  constructor(
+    name: string,
+    cost: number,
+    mult: number,
+    upgrade: HelperUpgrade,
+  ) {
+    super(name, cost);
+    this.mult = mult;
+    this.upgrade = upgrade;
+    this.button.textContent = `${this.name}
+    Cost: ${this.cost}`;
+  }
+
+  override buyUpgrade(): void {
+    count -= this.cost;
+    total += this.upgrade.rateAdd * this.upgrade.numOwned * (this.mult - 1);
+    this.upgrade.rateAdd = this.upgrade.rateAdd * this.mult;
+    this.upgrade.updateButtonText();
+    this.button.remove();
+  }
+}
+
+const upgrade1: HelperUpgrade = new HelperUpgrade("Upgrade 1", 10, 1);
+new HelperUpgrade("Upgrade 2", 25, 5);
+new HelperUpgrade("Upgrade 3", 100, 20);
+new UpgradeForUpgrade("Upgrade for Upgrade 1", 20, 2, upgrade1);
 // Upgrade 1
-let cost1 = 10; //initial cost of upgrade
+/*let cost1 = 10; //initial cost of upgrade
 let owned1 = 0; //number of upgrades owned
 const upgrade1 = document.createElement("button"); //create a button for the upgrade
 
@@ -96,10 +181,10 @@ upgrade1.addEventListener("click", () => { //upgrade increases freq by 1/s
 });
 
 buyUpgrade1();
-upgradesContainer.append(upgrade1);
+upgradesContainer.append(upgrade1);*/
 
 // Upgrade 2
-let cost2 = 25;
+/*let cost2 = 25;
 let owned2 = 0;
 const upgrade2 = document.createElement("button");
 
@@ -121,7 +206,8 @@ upgrade2.addEventListener("click", () => {
 
 buyUpgrade2();
 upgradesContainer.append(upgrade2);
-
+*/
+/*
 // Upgrade 3
 let cost3 = 100;
 let owned3 = 0;
@@ -145,7 +231,7 @@ upgrade3.addEventListener("click", () => {
 
 buyUpgrade3();
 upgradesContainer.append(upgrade3);
-
+*/
 // Upgrade 4 (Increases click value)
 let cost4 = 500;
 let owned4 = 0;
