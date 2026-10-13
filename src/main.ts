@@ -70,34 +70,49 @@ function update(timestamp: number) {
   requestAnimationFrame(update);
 }
 
-const upgradesContainer = document.createElement("div"); //create container to display upgrade buttons
-upgradesContainer.style.display = "flex";
-upgradesContainer.style.gap = "15px";
+const upgradeContainer = document.createElement("div"); //create container to display upgrade buttons
+upgradeContainer.style.display = "grid";
+upgradeContainer.style.gridTemplateColumns = "200px 200px 200px 200px 200px";
+upgradeContainer.style.gap = "15px";
 
 class Upgrade {
   name: string;
   cost: number;
   button: HTMLButtonElement;
 
-  constructor(name: string, cost: number) {
+  constructor(
+    name: string,
+    cost: number,
+    container: HTMLDivElement,
+    repeat: boolean,
+  ) {
     this.name = name;
     this.cost = cost;
 
     this.button = document.createElement("button");
     this.button.style.whiteSpace = "pre-line";
-    upgradesContainer.append(this.button);
-
+    this.button.style.width = "200px";
+    this.button.title =
+      `title needs to be replaced with flavor text in ${this.name}`;
+    container.append(this.button);
     this.button.addEventListener("click", () => {
       if (count >= this.cost) {
         this.buyUpgrade();
         updateDisplays();
       }
+    }, {
+      once: repeat,
     });
+  }
+
+  //accessing parts of the class directly to change them felt kind of wrong, so I made this a method instead
+  setHoverText(text: string) {
+    this.button.title = text;
   }
 
   buyUpgrade() {
     throw new Error(
-      `buyUpgrade() needs to be defined in subclass: ${this.name}`,
+      `buyUpgrade() needs to be defined in ${this.name}`,
     );
   }
 }
@@ -107,7 +122,7 @@ class HelperUpgrade extends Upgrade {
   numOwned: number;
 
   constructor(name: string, cost: number, rateAdd: number) {
-    super(name, cost);
+    super(name, cost, upgradeContainer, false);
     this.rateAdd = rateAdd;
     this.numOwned = 0;
     this.updateButtonText();
@@ -136,10 +151,11 @@ class UpgradeForUpgrade extends Upgrade {
   constructor(
     name: string,
     cost: number,
+    container: HTMLDivElement,
     mult: number,
     upgrade: HelperUpgrade,
   ) {
-    super(name, cost);
+    super(name, cost, container, true);
     this.mult = mult;
     this.upgrade = upgrade;
     this.button.textContent = `${this.name}
@@ -151,14 +167,68 @@ class UpgradeForUpgrade extends Upgrade {
     total += this.upgrade.rateAdd * this.upgrade.numOwned * (this.mult - 1);
     this.upgrade.rateAdd = this.upgrade.rateAdd * this.mult;
     this.upgrade.updateButtonText();
-    this.button.remove();
+    this.button.textContent = `${this.name}
+    SOLD OUT`;
+    this.setHoverText("You already have this upgrade!");
   }
 }
 
-const upgrade1: HelperUpgrade = new HelperUpgrade("Upgrade 1", 10, 1);
-new HelperUpgrade("Upgrade 2", 25, 5);
-new HelperUpgrade("Upgrade 3", 100, 20);
-new UpgradeForUpgrade("Upgrade for Upgrade 1", 20, 2, upgrade1);
+class UpgradeForClick extends Upgrade {
+  rateAdd: number;
+  constructor(
+    name: string,
+    cost: number,
+    container: HTMLDivElement,
+    rateAdd: number,
+  ) {
+    super(name, cost, container, false);
+    this.rateAdd = rateAdd;
+    this.button.textContent = `${this.name}
+    Cost: ${this.cost}`;
+  }
+
+  override buyUpgrade(): void {
+    count -= this.cost;
+    clickValue += this.rateAdd;
+    updateDisplays();
+    this.button.textContent = "SOLD OUT";
+  }
+}
+
+const fishercat: HelperUpgrade = new HelperUpgrade("Fisher Cat", 10, 1);
+fishercat.setHoverText(
+  "Fisher Cats are cats that you can hire to fish for you...For the right price, of course.",
+);
+
+const farmercat: HelperUpgrade = new HelperUpgrade("Farmer Cat", 25, 5);
+farmercat.setHoverText(
+  "Fish enthusiasts turned breeders, Farmer Cats own ponds of exotic fish and will happily give you some of the ones that are not up to their aesthetic standards if you provide some first.",
+);
+
+const wizardcat: HelperUpgrade = new HelperUpgrade("Wizard Cat", 100, 20);
+wizardcat.setHoverText(
+  "Wizard Cats are former familiars who decided to take up the study of magic themselves, mostly because they wanted to summon portals to dimensions with more fish. They'll agree to give you some of these otherwordly fish if you provide the supplies for their spells.",
+);
+
+const scientistcat: HelperUpgrade = new HelperUpgrade(
+  "Scientist Cat",
+  1000,
+  50,
+);
+scientistcat.setHoverText(
+  "Scientist Cats have dedicated their lives to the pursuit of knowledge...on how to best clone fish. Due to the fact that the subjects of their research often get eaten before any meaningful analysis can be done, they've struggled to get grants. They're willing to share some of their cloned fish if you fund their research efforts.",
+);
+
+const clickUpgrade1: UpgradeForClick = new UpgradeForClick(
+  "Sharper Claws",
+  500,
+  upgradeContainer,
+  1,
+);
+clickUpgrade1.setHoverText(
+  "Your cat has scratched the number '500' into the wall of your bedroom and has left a dead fish lying on the floor beneath the message. After noticing you staring at the bizarre scene, your cat skips away and comes back with a sharpening stone. She looks between you, the wall, and her paws, and meows. Her message is clear: if you give me 500 fish, I'll sharpen my claws so I can catch fish better.",
+);
+new UpgradeForUpgrade("Metal fishing rods", 20, upgradeContainer, 2, fishercat);
 // Upgrade 1
 /*let cost1 = 10; //initial cost of upgrade
 let owned1 = 0; //number of upgrades owned
@@ -181,7 +251,7 @@ upgrade1.addEventListener("click", () => { //upgrade increases freq by 1/s
 });
 
 buyUpgrade1();
-upgradesContainer.append(upgrade1);*/
+upgradeRow1.append(upgrade1);*/
 
 // Upgrade 2
 /*let cost2 = 25;
@@ -205,7 +275,7 @@ upgrade2.addEventListener("click", () => {
 });
 
 buyUpgrade2();
-upgradesContainer.append(upgrade2);
+upgradeRow1.append(upgrade2);
 */
 /*
 // Upgrade 3
@@ -230,10 +300,10 @@ upgrade3.addEventListener("click", () => {
 });
 
 buyUpgrade3();
-upgradesContainer.append(upgrade3);
+upgradeRow1.append(upgrade3);
 */
 // Upgrade 4 (Increases click value)
-let cost4 = 500;
+/*let cost4 = 500;
 let owned4 = 0;
 const upgrade4 = document.createElement("button");
 
@@ -253,8 +323,8 @@ upgrade4.addEventListener("click", () => {
 });
 
 buyUpgrade4();
-upgradesContainer.append(upgrade4);
-
+upgradeRow1.append(upgrade4);
+*/
 app.append(
   heading,
   image,
@@ -262,7 +332,7 @@ app.append(
   counter,
   productionDisplay,
   clickValueDisplay,
-  upgradesContainer,
+  upgradeContainer,
 );
 
 requestAnimationFrame(update);
