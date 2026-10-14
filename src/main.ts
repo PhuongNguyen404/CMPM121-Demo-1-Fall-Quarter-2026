@@ -1,8 +1,8 @@
 // Vite turns this import into a production-safe URL. Keep it as a file so
 // even this tiny example demonstrates a separately deployed asset.
 // @deno-types="./asset-url.d.ts"
-import tileUrl from "./assets/tile.svg?no-inline";
-import tileClickedUrl from "./assets/tileClicked.svg?no-inline";
+import unclickedUrl from "./assets/unclickedCat.svg?no-inline";
+import clickedUrl from "./assets/clickedCat.svg?no-inline";
 
 const app = document.querySelector<HTMLElement>("#app")!;
 
@@ -10,8 +10,8 @@ const heading = document.createElement("h1");
 heading.textContent = "D1 project";
 
 const image = document.createElement("img");
-image.src = tileUrl;
-image.alt = "A teal tile with a cream circle";
+image.src = unclickedUrl;
+image.alt = "A calico cat";
 image.width = 96;
 image.height = 96;
 
@@ -20,12 +20,12 @@ image.style.cursor = "pointer";
 
 // Change the image's appearance while the mouse is pressed.
 image.addEventListener("mousedown", () => {
-  image.src = tileClickedUrl;
+  image.src = clickedUrl;
 });
 
 // Restore the original appearance when the mouse is released.
 image.addEventListener("mouseup", () => {
-  image.src = tileUrl;
+  image.src = unclickedUrl;
 });
 
 const message = document.createElement("p");
@@ -95,6 +95,7 @@ class Upgrade {
     this.button.title =
       `title needs to be replaced with flavor text in ${this.name}`;
     container.append(this.button);
+
     this.button.addEventListener("click", () => {
       if (count >= this.cost) {
         this.buyUpgrade();
@@ -190,8 +191,8 @@ class UpgradeForClick extends Upgrade {
   override buyUpgrade(): void {
     count -= this.cost;
     clickValue += this.rateAdd;
-    updateDisplays();
     this.button.textContent = "SOLD OUT";
+    this.setHoverText("You already have this upgrade!");
   }
 }
 
@@ -228,6 +229,7 @@ const clickUpgrade1: UpgradeForClick = new UpgradeForClick(
 clickUpgrade1.setHoverText(
   "Your cat has scratched the number '500' into the wall of your bedroom and has left a dead fish lying on the floor beneath the message. After noticing you staring at the bizarre scene, your cat skips away and comes back with a sharpening stone. She looks between you, the wall, and her paws, and meows. Her message is clear: if you give me 500 fish, I'll sharpen my claws so I can catch fish better.",
 );
+
 new UpgradeForUpgrade("Metal fishing rods", 20, upgradeContainer, 2, fishercat);
 // Upgrade 1
 /*let cost1 = 10; //initial cost of upgrade
