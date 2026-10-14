@@ -44,9 +44,9 @@ image.addEventListener("click", () => { //Behavior when button is clicked
 });
 
 function updateProductionDisplays() { // Updates displays with current values of count, total production, and click value.
-  counter.textContent = `Treats: ${Math.floor(count)}`;
-  productionDisplay.textContent = `Treats per second: ${total}`;
-  clickValueDisplay.textContent = `Treats each click: ${clickValue}`;
+  counter.textContent = `Fish: ${Math.floor(count)}`;
+  productionDisplay.textContent = `Fish per second: ${total}`;
+  clickValueDisplay.textContent = `Fish each click: ${clickValue}`;
 }
 
 let previousTime: number | undefined; //will store the previous frame's timestamp, starts undefined
@@ -77,7 +77,6 @@ class Upgrade {
     name: string,
     cost: number,
     container: HTMLDivElement,
-    repeat: boolean,
   ) {
     this.name = name;
     this.cost = cost;
@@ -94,8 +93,6 @@ class Upgrade {
         this.buyUpgrade();
         updateProductionDisplays();
       }
-    }, {
-      once: repeat,
     });
   }
 
@@ -116,7 +113,7 @@ class HelperUpgrade extends Upgrade {
   numOwned: number;
 
   constructor(name: string, cost: number, rateAdd: number) {
-    super(name, cost, upgradeContainer, false);
+    super(name, cost, upgradeContainer);
     this.rateAdd = rateAdd;
     this.numOwned = 0;
     this.updateButtonText();
@@ -141,6 +138,8 @@ class HelperUpgrade extends Upgrade {
 class UpgradeForUpgrade extends Upgrade {
   mult: number;
   upgrade: HelperUpgrade;
+  numUpgradeNeeded: number;
+  purchased: boolean;
 
   constructor(
     name: string,
@@ -148,22 +147,32 @@ class UpgradeForUpgrade extends Upgrade {
     container: HTMLDivElement,
     mult: number,
     upgrade: HelperUpgrade,
+    numUpgradeNeeded: number,
   ) {
-    super(name, cost, container, true);
+    super(name, cost, container);
     this.mult = mult;
     this.upgrade = upgrade;
+    this.numUpgradeNeeded = numUpgradeNeeded;
+    this.purchased = false;
     this.button.textContent = `${this.name}
-    Cost: ${this.cost}`;
+    Cost: ${this.cost}
+    You need ${numUpgradeNeeded} ${this.upgrade.name}s to buy this upgrade`;
   }
 
   override buyUpgrade(): void {
-    count -= this.cost;
-    total += this.upgrade.rateAdd * this.upgrade.numOwned * (this.mult - 1);
-    this.upgrade.rateAdd = this.upgrade.rateAdd * this.mult;
-    this.upgrade.updateButtonText();
-    this.button.textContent = `${this.name}
-    SOLD OUT`;
-    this.setHoverText("You already have this upgrade!");
+    if (
+      (this.purchased == false) &&
+      (this.upgrade.numOwned >= this.numUpgradeNeeded)
+    ) {
+      count -= this.cost;
+      total += this.upgrade.rateAdd * this.upgrade.numOwned * (this.mult - 1);
+      this.upgrade.rateAdd = this.upgrade.rateAdd * this.mult;
+      this.upgrade.updateButtonText();
+      this.button.textContent = `${this.name}
+      SOLD OUT`;
+      this.setHoverText("You already have this upgrade!");
+      this.purchased = true;
+    }
   }
 }
 
@@ -175,7 +184,7 @@ class UpgradeForClick extends Upgrade {
     container: HTMLDivElement,
     rateAdd: number,
   ) {
-    super(name, cost, container, false);
+    super(name, cost, container);
     this.rateAdd = rateAdd;
     this.button.textContent = `${this.name}
     Cost: ${this.cost}`;
@@ -224,8 +233,63 @@ clickUpgrade1.setHoverText(
   "Your cat has scratched the number '500' into the wall of your bedroom and has left a dead fish lying on the floor beneath the message. After noticing you staring at the bizarre scene, your cat skips away and comes back with a sharpening stone. She looks between you, the wall, and her paws, and meows. Her message is clear: if you give me 500 fish, I'll sharpen my claws so I can catch fish better.",
 );
 
-new UpgradeForUpgrade("Metal fishing rods", 20, upgradeContainer, 2, fishercat);
+const fishingUpgrade1: UpgradeForUpgrade = new UpgradeForUpgrade(
+  "Metal fishing rods",
+  20,
+  upgradeContainer,
+  2,
+  fishercat,
+  2,
+);
+fishingUpgrade1.setHoverText(
+  "The Fisher Cats fish with shoddy wooden rods. Every now and again, you see them look over at someone using a metal fishing rod.",
+);
 
+const farmingUpgrade1: UpgradeForUpgrade = new UpgradeForUpgrade(
+  "Extra Fish Food",
+  50,
+  upgradeContainer,
+  2,
+  farmercat,
+  2,
+);
+farmingUpgrade1.setHoverText(
+  "Some fish can be tricked into thinking its breeding season by mimicking the changing of the seasons. Giving the fish more food and heating the water can trick them into thinking that spring has come.",
+);
+
+const magicUpgrade1: UpgradeForUpgrade = new UpgradeForUpgrade(
+  "New Wands",
+  200,
+  upgradeContainer,
+  2,
+  wizardcat,
+  2,
+);
+magicUpgrade1.setHoverText(
+  "Despite the fact that the Wizard Cats have grown accustomed to using hand-me-down magic supplies, the old wands still only work partially, leading to spells failing.",
+);
+
+const scienceUpgrade1: UpgradeForUpgrade = new UpgradeForUpgrade(
+  "Coffee",
+  2000,
+  upgradeContainer,
+  2,
+  scientistcat,
+  2,
+);
+scienceUpgrade1.setHoverText(
+  "The cats, despite being scientists, are still cats and sleep quite a bit. You think their productivity could increase if you gave them some coffee.",
+);
+
+const clickUpgrade2: UpgradeForClick = new UpgradeForClick(
+  "New Friends",
+  1000,
+  upgradeContainer,
+  3,
+);
+clickUpgrade2.setHoverText(
+  "Your cat has been hanging around with other cats in the neighborhood lately. You wonder if they'll help catch fish too if you give them some fish.",
+);
 app.append(
   heading,
   image,
